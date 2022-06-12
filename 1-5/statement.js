@@ -3,12 +3,15 @@ function statement(invoice, plays) {
   const statementData = {}; //중간 데이터 구조 인수로 전달
   statementData.customer = invoice.customer; //고객데이터를 중간 데이터로 옮김
   statementData.performances = invoice.performances.map(enrichPerformance);
+  statementData.totalAmount = totalAmount(statementData);
+  statementData.totalVolumeCredits = totalVolumeCredits(statementData);
   return renderPlainText(statementData, plays);
 
   function enrichPerformance(aPerformance) {
     const result = Object.assign({}, aPerformance);
     result.play = playFor(result);
     result.amount = amountFor(result);
+    result.volumeCredits = volumeCreditsFor(result);
     return result;
   }
   function playFor(aPerformance) {
@@ -39,40 +42,14 @@ function statement(invoice, plays) {
     }
     return result;
   }
-}
-function renderPlainText(data, plays) {
-  let result = `청구내역 (고객명: ${data.customer})\n`; //고객데이터를 중간 데이터로 부터 얻기
-  for (let perf of data.performances) {
-    result += `${perf.play.name}: ${usd(perf.amount)} ${perf.audience}석\n`;
+
+  function totalAmount(data) {
+    return data.performances.reduce((total, p) => total + p.amount, 0);
   }
-  result += `총액 ${usd(totalAmount())}\n`;
-  result += `적립 포인트 ${totalVolumeCredits()}점\n`;
-  return result;
-}
 
-function totalAmount() {
-  let result = 0;
-
-  for (let perf of data.performances) {
-    result += perf.amount;
+  function totalVolumeCredits(data) {
+    return data.performances.reduce((total, p) => total + p.volumeCredits, 0);
   }
-  return result;
-}
-function totalVolumeCredits() {
-  let result = 0;
-
-  for (let perf of data.performances) {
-    result += volumeCreditsFor(perf);
-  }
-  return result;
-}
-
-function usd(aNumber) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 2,
-  }).format(aNumber / 100);
 }
 
 function volumeCreditsFor(aPerformance) {
@@ -84,4 +61,22 @@ function volumeCreditsFor(aPerformance) {
   }
 
   return result;
+}
+
+function renderPlainText(data, plays) {
+  let result = `청구내역 (고객명: ${data.customer})\n`; //고객데이터를 중간 데이터로 부터 얻기
+  for (let perf of data.performances) {
+    result += `${perf.play.name}: ${usd(perf.amount)} ${perf.audience}석\n`;
+  }
+  result += `총액 ${usd(data.totalAmount)}\n`;
+  result += `적립 포인트 ${data.totalVolumeCredits}점\n`;
+  return result;
+}
+
+function usd(aNumber) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 2,
+  }).format(aNumber / 100);
 }
