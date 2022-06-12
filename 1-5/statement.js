@@ -1,9 +1,11 @@
 function statement(invoice, plays) {
   //본문전체를 별도 함수로 추출
-  return renderPlainText(invoice, plays);
+  const statementData = {}; //중간 데이터 구조 인수로 전달
+  statementData.customer = invoice.customer; //고객데이터를 중간 데이터로 옮김
+  return renderPlainText(statementData, invoice, plays);
 }
-function renderPlainText(invoice, plays) {
-  let result = `청구내역 (고객명: ${invoice.customer})\n`;
+function renderPlainText(data, invoice, plays) {
+  let result = `청구내역 (고객명: ${data.customer})\n`; //고객데이터를 중간 데이터로 부터 얻기
   for (let perf of invoice.performances) {
     result += `  ${playFor(perf).name}: ${usd(amountFor(perf))} (${
       perf.audience
