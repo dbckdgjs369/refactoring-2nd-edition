@@ -2,8 +2,18 @@ function statement(invoice, plays) {
   //본문전체를 별도 함수로 추출
   const statementData = {}; //중간 데이터 구조 인수로 전달
   statementData.customer = invoice.customer; //고객데이터를 중간 데이터로 옮김
-  statementData.performances = invoice.performances;
+  statementData.performances = invoice.performances.map(enrichPerformance);
   return renderPlainText(statementData, plays);
+
+  function enrichPerformance(aPerformance) {
+    const result = Object.assign({}, aPerformance);
+    result.play = playFor(result);
+    return result;
+  }
+  function playFor(aPerformance) {
+    //playFor 함수를 옮김
+    return plays[aPerformance.playID];
+  }
 }
 function renderPlainText(data, plays) {
   let result = `청구내역 (고객명: ${data.customer})\n`; //고객데이터를 중간 데이터로 부터 얻기
@@ -51,10 +61,6 @@ function volumeCreditsFor(aPerformance) {
   }
 
   return result;
-}
-
-function playFor(aPerformance) {
-  return plays[aPerformance.playID];
 }
 
 function amountFor(aPerformance) {
