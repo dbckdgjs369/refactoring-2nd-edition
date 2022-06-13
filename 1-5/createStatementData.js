@@ -1,3 +1,10 @@
+class PerformanceCalculator {
+  constructor(aPerformance, aPlay) {
+    this.performance = aPerformance;
+    this.play = aPlay;
+  }
+}
+
 export default function createStatement(invoice, plays) {
   const statementData = {}; //중간 데이터 구조 인수로 전달
   statementData.customer = invoice.customer; //고객데이터를 중간 데이터로 옮김
@@ -7,8 +14,12 @@ export default function createStatement(invoice, plays) {
   return statementData;
 
   function enrichPerformance(aPerformance) {
+    const calculator = new PerformanceCalculator(
+      aPerformance,
+      playFor(aPerformance)
+    );
     const result = Object.assign({}, aPerformance);
-    result.play = playFor(result);
+    result.play = calculator.play;
     result.amount = amountFor(result);
     result.volumeCredits = volumeCreditsFor(result);
     return result;
